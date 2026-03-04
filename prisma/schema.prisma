@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  display_name String
+  created_at   DateTime @default(now())
+  ledger_entries LedgerEntry[]
+  bets         Bet[]
+}
+
+model LedgerEntry {
+  id        String   @id @default(uuid())
+  user_id   String
+  user      User     @relation(fields: [user_id], references: [id])
+  type      String   // DEPOSIT | BET_DEBIT | BET_CREDIT
+  amount    Int      // 最小单位，整数
+  created_at DateTime @default(now())
+}
+
+model Bet {
+  id           String   @id @default(uuid())
+  user_id      String
+  user         User     @relation(fields: [user_id], references: [id])
+  amount       Int      // 投注金额，最小单位
+  status       String   // PLACED | SETTLED
+  result       String?  // WIN | LOSE，仅 SETTLED 时有值
+  payout_amount Int     @default(0)
+  created_at   DateTime @default(now())
+}
